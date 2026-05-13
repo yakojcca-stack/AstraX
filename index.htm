@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AstraX</title>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/megajs@1/dist/main.browser-umd.js"></script>
+
+    <style>
+:root {
+        --bg: #050506;
+        --bg-2: #090a0c;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel-2: rgba(255, 255, 255, 0.09);
+        --line: rgba(255, 255, 255, 0.13);
+        --line-soft: rgba(255, 255, 255, 0.075);
+        --text: #f4f4f0;
+        --muted: #aaa9a2;
+        --muted-2: #74736d;
+        --white: #ffffff;
+        --silver: #d8d8d2;
+        --steel: #8e969c;
+        --green: #b9f7d0;
+        --radius: 26px;
+    }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            background:
+            radial-gradient(circle at 20% 8%, rgba(255, 255, 255, 0.08), transparent 27%),
+            radial-gradient(circle at 82% 18%, rgba(160, 172, 180, 0.1), transparent 30%),
+            linear-gradient(180deg, #050506 0%, #08090b 48%, #050506 100%);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI", "Noto Sans TC", sans-serif;
+            overflow-x: hidden;
+        }
+
+        html.no-scroll,
+        body.no-scroll {
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+            linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+            background-size: 72px 72px;
+            mask-image: linear-gradient(tobottom, rgba(0,0,0,0.62), transparent 78%);
+            pointer-events: none;
+            z-index: -5;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+            linear-gradient(90deg, rgba(0,0,0,0.42), transparent 30%, transparent 70%, rgba(0,0,0,0.5)),
+            radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.18) 54%, rgba(0,0,0,0.72) 100%);
+            pointer-events: none;
+            z-index: -4;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            opacity: 0.055;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+        }
+
+        .nav {
+            position: fixed;
+            top: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1220px, calc(100% - 32px));
+            height: 74px;
+            padding: 0 16px 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            background: rgba(10, 11, 12, 0.6);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            box-shadow:
+            0 22px 80px rgba(0,0,0,0.38),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+            z-index: 100;
+            animation: navIn0.9s cubic-bezier(.2,.9,.2,1) both;
+            animation-delay: 0.08s;
+        }
+
+@keyframes navIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            object-fit: contain;
+            padding: 4px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.13);
+            box-shadow:
+            0 0 28px rgba(255,255,255,0.12),
+            inset 0 1px 0 rgba(255,255,255,0.18);
+        }
+
+        .brand-title {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .brand-title strong {
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .brand-title span {
+            font-size: 0.72rem;
+            color: var(--muted-2);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .nav-links a {
+            position: relative;
+            cursor: pointer;
+            transition: color 0.25s ease;
+        }
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, #fff, transparent);
+            transition: width 0.25s ease;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .lang {
+            display: flex;
+            gap: 7px;
+            padding: 5px;
+            border-radius: 999px;
+            border: 1px solid var(--line-soft);
+            background: rgba(255,255,255,0.04);
+        }
+
+        .lang button {
+            border: 0;
+            cursor: pointer;
+            color: var(--muted);
+            background: transparent;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            transition: 0.25s ease;
+        }
+
+        .lang button.active {
+            color: #111;
+            background: rgba(255,255,255,0.86);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
+        }
+
+        .hero {
+            width: min(1220px, calc(100% - 32px));
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 160px 0 88px;
+            display: grid;
+            grid-template-columns: 0.96fr 1.04fr;
+            align-items: center;
+            gap: 54px;
+        }
+
+        .hero-copy {
+            position: relative;
+            z-index: 2;
+            animation: textIn0.95s cubic-bezier(.2,.9,.2,1) both;
+            animation-delay: 0.18s;
+        }
+
+@keyframes textIn {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+                filter: blur(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        .pill {
+            width: fit-content;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            margin-bottom: 22px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            color: #eeeeea;
+            background: rgba(255,255,255,0.055);
+            box-shadow:
+            0 0 30px rgba(255,255,255,0.055),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .pill i {
+            width: 17px;
+            height: 17px;
+            color: var(--green);
+            filter: drop-shadow(0 0 10px rgba(185,247,208,0.4));
+        }
+
+        h1 {
+            font-size: clamp(3.4rem, 7.2vw, 7rem);
+            line-height: 0.88;
+            letter-spacing: -0.085em;
+            margin-bottom: 26px;
+        }
+
+        .h1-sub {
+            display: block;
+            background: linear-gradient(135deg, #ffffff 0%, #d8d8d2 45%, #8e969c 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .hero-desc {
+            max-width: 650px;
+            color: var(--muted);
+            font-size: 1.08rem;
+            line-height: 1.9;
+            margin-bottom: 34px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--line);
+            border-radius: 17px;
+            padding: 15px 19px;
+            font-weight: 760;
+            cursor: pointer;
+            overflow: hidden;
+            transition: 0.28s ease;
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .btn i {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn.discord {
+            background: #ffffff;
+            color: #111;
+            border-color: rgba(255,255,255,0.9);
+            box-shadow:
+            0 18px 50px rgba(255,255,255,0.12),
+            inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+
+        .btn.discord:hover {
+            transform: translateY(-4px);
+            background: #ffffff;
+        }
+
+        .btn-primary {
+            color: #111;
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.96), rgba(210,210,205,0.88));
+            box-shadow:
+            0 20px 55px rgba(255,255,255,0.12),
+            inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow:
+            0 28px 80px rgba(255,255,255,0.16),
+            inset 0 1px 0 rgba(255,255,255,0.62);
+        }
+
+        .btn-ghost {
+            color: #fff;
+            background: rgba(255,255,255,0.055);
+            backdrop-filter: blur(18px);
+        }
+
+        .btn-ghost:hover {
+            transform: translateY(-4px);
+            background: rgba(255,255,255,0.095);
+        }
+
+        .hero-stage {
+            position: relative;
+            animation: visualIn1.05s cubic-bezier(.2,.9,.2,1) both;
+            animation-delay: 0.26s;
+        }
+
+@keyframes visualIn {
+            from {
+                opacity: 0;
+                transform: translateY(32px) scale(0.97);
+                filter: blur(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .orbit {
+            position: absolute;
+            inset: -34px;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 44px;
+            transform: rotate(-3deg);
+            pointer-events: none;
+        }
+
+        .orbit::before {
+            content: "";
+            position: absolute;
+            width: 92px;
+            height: 1px;
+            right: 12%;
+            top: -1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.86), transparent);
+            box-shadow: 0 0 20px rgba(255,255,255,0.45);
+            animation: orbitLine4s ease-in-out infinite;
+        }
+
+@keyframes orbitLine {
+            0%, 100% {
+                opacity: 0.32;
+                transform: translateX(-40px);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(40px);
+            }
+        }
+
+        .window {
+            position: relative;
+            padding: 12px;
+            border-radius: 34px;
+            border: 1px solid var(--line);
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.032)),
+            rgba(10,11,12,0.62);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            box-shadow:
+            0 34px 110px rgba(0,0,0,0.5),
+            0 0 80px rgba(255,255,255,0.06),
+            inset 0 1px 0 rgba(255,255,255,0.14);
+            transform: perspective(1100px) rotateY(-8deg) rotateX(4deg);
+            overflow: hidden;
+        }
+
+        .window::before {
+            content: "";
+            position: absolute;
+            inset: -160px;
+            background:
+            conic-gradient(from90deg, transparent, rgba(255,255,255,0.11), transparent, rgba(160,172,180,0.1), transparent);
+            animation: slowSpin10s linear infinite;
+            z-index: -1;
+        }
+
+@keyframes slowSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .window-bar {
+            height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0 12px 10px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+        }
+
+        .dot:nth-child(1) {
+            background: #d9d9d2;
+        }
+
+        .dot:nth-child(2) {
+            background: #9b9b95;
+        }
+
+        .dot:nth-child(3) {
+            background: #60615e;
+        }
+
+        .window-title {
+            margin-left: 8px;
+            color: var(--muted-2);
+            font-size: 0.82rem;
+        }
+
+        .image-wrap {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background:
+            radial-gradient(circle at center, rgba(255,255,255,0.08), transparent 42%),
+            #101112;
+            min-height: 340px;
+            display: grid;
+            place-items: center;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: auto;
+            max-height: 560px;
+            display: block;
+            border-radius: 24px;
+            object-fit: contain;
+            opacity: 0;
+            transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease;
+        }
+
+        .hero-img.loaded {
+            opacity: 1;
+        }
+
+        .hero-img.switching {
+            opacity: 0;
+            transform: scale(1.018);
+            filter: blur(8px);
+        }
+
+        .image-fallback {
+            position: absolute;
+            inset: 0;
+            display: none;
+            place-items: center;
+            text-align: center;
+            padding: 26px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .image-fallback.show {
+            display: grid;
+        }
+
+        .float-card {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 15px 16px;
+            border-radius: 21px;
+            border: 1px solid var(--line);
+            background: rgba(8,9,10,0.68);
+            backdrop-filter: blur(22px);
+            box-shadow:
+            0 20px 70px rgba(0,0,0,0.38),
+            inset 0 1px 0 rgba(255,255,255,0.09);
+            animation: float 4.8s ease-in-out infinite;
+        }
+
+        .float-card i {
+            width: 21px;
+            height: 21px;
+            color: #e8e8e2;
+        }
+
+        .float-card strong {
+            display: block;
+            font-size: 1.18rem;
+        }
+
+        .float-card span {
+            color: var(--muted-2);
+            font-size: 0.8rem;
+        }
+
+        .float-card.one {
+            left: -24px;
+            bottom: 64px;
+        }
+
+        .float-card.two {
+            right: -12px;
+            top: 74px;
+            animation-delay: -1.4s;
+        }
+
+        .float-card.three {
+            right: 38px;
+            bottom: -18px;
+            animation-delay: -2.2s;
+        }
+
+@keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-14px);
+            }
+        }
+
+        .section {
+            width: min(1220px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 92px 0;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 32px;
+            margin-bottom: 34px;
+        }
+
+        .kicker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 13px;
+            color: var(--silver);
+            font-weight: 850;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-size: 0.76rem;
+        }
+
+        .kicker i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(2.1rem, 4.3vw, 4.6rem);
+            line-height: 0.95;
+            letter-spacing: -0.065em;
+        }
+
+        .section-desc {
+            max-width: 500px;
+            color: var(--muted);
+            line-height: 1.85;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat {
+            min-height: 172px;
+            padding: 25px;
+            border-radius: var(--radius);
+            border: 1px solid var(--line);
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.095), rgba(255,255,255,0.03)),
+            rgba(10,11,12,0.62);
+            backdrop-filter: blur(22px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+            transition: 0.32s ease;
+        }
+
+        .stat:hover {
+            transform: translateY(-7px);
+            border-color: rgba(255,255,255,0.25);
+            box-shadow:
+            0 24px 70px rgba(0,0,0,0.3),
+            0 0 46px rgba(255,255,255,0.05);
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 18px;
+            border-radius: 15px;
+            color: #f1f1ec;
+            background: rgba(255,255,255,0.075);
+            border: 1px solid rgba(255,255,255,0.13);
+        }
+
+        .stat-icon i {
+            width: 21px;
+            height: 21px;
+        }
+
+        .stat-value {
+            font-size: 2.15rem;
+            line-height: 1;
+            font-weight: 920;
+            letter-spacing: -0.055em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, #b9b9b0);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .feature {
+            position: relative;
+            min-height: 255px;
+            padding: 27px;
+            border-radius: 30px;
+            border: 1px solid var(--line);
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.028)),
+            rgba(10,11,12,0.62);
+            backdrop-filter: blur(24px);
+            overflow: hidden;
+            transition: 0.35s ease;
+        }
+
+        .feature::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+            radial-gradient(circle at 86% 82%, rgba(255,255,255,0.08), transparent 34%),
+            radial-gradient(circle at 20% 0%, rgba(160,172,180,0.07), transparent 26%);
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .feature:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255,255,255,0.24);
+            box-shadow:
+            0 26px 80px rgba(0,0,0,0.3),
+            0 0 50px rgba(255,255,255,0.05);
+        }
+
+        .feature > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 22px;
+            border-radius: 18px;
+            color: #fff;
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)),
+            rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.13);
+            box-shadow: 0 0 28px rgba(255,255,255,0.055);
+        }
+
+        .feature-icon i {
+            width: 24px;
+            height: 24px;
+        }
+
+        .feature h3 {
+            font-size: 1.24rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        .feature p {
+            color: var(--muted);
+            line-height: 1.78;
+        }
+
+        .showcase {
+            position: relative;
+            padding: 17px;
+            border-radius: 36px;
+            border: 1px solid var(--line);
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.105), rgba(255,255,255,0.032)),
+            rgba(10,11,12,0.64);
+            backdrop-filter: blur(28px);
+            box-shadow:
+            0 35px 110px rgba(0,0,0,0.36),
+            inset 0 1px 0 rgba(255,255,255,0.12);
+            overflow: hidden;
+        }
+
+        .showcase::before {
+            content: "";
+            position: absolute;
+            inset: -220px;
+            background:
+            conic-gradient(from180deg, transparent, rgba(255,255,255,0.08), transparent, rgba(160,172,180,0.08), transparent);
+            animation: slowSpin12s linear infinite;
+            pointer-events: none;
+        }
+
+        .showcase > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .showcase-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: 1px solid var(--line-soft);
+            border-radius: 15px;
+            padding: 10px 13px;
+            color: var(--muted);
+            background: rgba(255,255,255,0.045);
+            transition: 0.25s ease;
+        }
+
+        .tab i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .tab.active {
+            color: #111;
+            border-color: rgba(255,255,255,0.42);
+            background: rgba(255,255,255,0.86);
+            box-shadow: 0 0 28px rgba(255,255,255,0.08);
+        }
+
+        .preview-status {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .preview-status i {
+            width: 17px;
+            height: 17px;
+            color: var(--green);
+        }
+
+        .preview {
+            position: relative;
+            overflow: hidden;
+            border-radius: 27px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background:
+            radial-gradient(circle at center, rgba(255,255,255,0.07), transparent 42%),
+            #090a0b;
+            min-height: 470px;
+            display: grid;
+            place-items: center;
+        }
+
+        .preview::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+            linear-gradient(120deg, rgba(255,255,255,0.08), transparent 22%, transparent 78%, rgba(160,172,180,0.06));
+            pointer-events: none;
+        }
+
+        .preview img {
+            width: 100%;
+            height: auto;
+            max-height: 720px;
+            object-fit: contain;
+            display: block;
+            opacity: 0;
+            transform: scale(1);
+            transition:
+            opacity 0.34s ease,
+            transform 0.34s ease,
+            filter 0.34s ease;
+        }
+
+        .preview img.loaded {
+            opacity: 1;
+        }
+
+        .preview img.switching {
+            opacity: 0;
+            transform: scale(1.018);
+            filter: blur(8px);
+        }
+
+        .preview-fallback {
+            position: absolute;
+            inset: 0;
+            display: none;
+            place-items: center;
+            text-align: center;
+            padding: 26px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .preview-fallback.show {
+            display: grid;
+        }
+
+        .cta {
+            position: relative;
+            overflow: hidden;
+            padding: 58px;
+            border-radius: 38px;
+            border: 1px solid var(--line);
+            background:
+            radial-gradient(circle at 20% 22%, rgba(255,255,255,0.09), transparent 34%),
+            radial-gradient(circle at 86% 20%, rgba(160,172,180,0.08), transparent 30%),
+            linear-gradient(135deg, rgba(255,255,255,0.085), rgba(255,255,255,0.025)),
+            rgba(10,11,12,0.68);
+            backdrop-filter: blur(30px);
+            box-shadow:
+            0 34px 110px rgba(0,0,0,0.36),
+            inset 0 1px 0 rgba(255,255,255,0.12);
+        }
+
+        .cta::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -35%;
+            width: 35%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+            transform: skewX(-18deg);
+            animation: shine5.8s ease-in-out infinite;
+        }
+
+@keyframes shine {
+            0%, 54% {
+                left: -45%;
+            }
+
+            82%, 100% {
+                left: 115%;
+            }
+        }
+
+        .cta h2 {
+            max-width: 800px;
+            font-size: clamp(2.35rem, 5vw, 5rem);
+            line-height: 0.94;
+            letter-spacing: -0.075em;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            max-width: 710px;
+            color: var(--muted);
+            line-height: 1.85;
+            margin-bottom: 28px;
+        }
+
+        .cta-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .download-panel-wrap {
+            width: min(1220px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 0 0 30px;
+        }
+
+        .download-panel {
+            padding: 30px;
+            border-radius: 30px;
+            border: 1px solid var(--line);
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)),
+            rgba(10,11,12,0.64);
+            backdrop-filter: blur(24px);
+            box-shadow:
+            0 22px 70px rgba(0,0,0,0.34),
+            inset 0 1px 0 rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .download-panel h3 {
+            margin: 0;
+            font-size: clamp(1.35rem, 2vw, 1.8rem);
+            letter-spacing: -0.02em;
+        }
+
+        .download-panel p {
+            margin: 0 0 10px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .download-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            place-items: center;
+            padding: 20px;
+            background: rgba(2, 4, 7, 0.35);
+            backdrop-filter: blur(5px);
+            z-index: 1200;
+        }
+
+        .download-overlay.show {
+            display: grid;
+        }
+
+        .download-overlay-card {
+            width: min(540px, 100%);
+            border-radius: 24px;
+            border: 1px solid var(--line);
+            padding: 20px;
+            background:
+            linear-gradient(135deg, rgba(255,255,255,0.13), rgba(255,255,255,0.04)),
+            rgba(8,10,12,0.74);
+            box-shadow:
+            0 30px 90px rgba(0,0,0,0.45),
+            inset 0 1px 0 rgba(255,255,255,0.14);
+        }
+
+        .download-overlay-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .download-overlay-logo {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            border-radius: 9px;
+            padding: 3px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.16);
+        }
+
+        .download-overlay-text {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .download-overlay-text strong {
+            font-size: 1.02rem;
+            letter-spacing: 0.01em;
+        }
+
+        .download-overlay-text span {
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .download-progress-track {
+            width: 100%;
+            height: 11px;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.09);
+        }
+
+        .download-progress-bar {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #ffffff 0%, #d8d8d2 100%);
+            transition: width 0.16s ease;
+        }
+
+        .footer {
+            width: min(1220px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 36px 0 46px;
+            border-top: 1px solid var(--line-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            color: var(--muted-2);
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-left img {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            object-fit: contain;
+            padding: 2px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: 0.75s cubic-bezier(.2,.9,.2,1);
+        }
+
+        .reveal.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+@media (max-width: 1040px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 145px;
+            }
+
+            .window {
+                transform: none;
+            }
+
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .section-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+@media (max-width: 780px) {
+            .nav-links {
+                display: none;
+            }
+
+            .nav {
+                height: 68px;
+            }
+
+            .brand-title span {
+                display: none;
+            }
+
+            .float-card {
+                position: relative;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                margin-top: 12px;
+            }
+
+            .hero-stage {
+                display: grid;
+                gap: 10px;
+            }
+
+            .showcase-top {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+@media (max-width: 620px) {
+            .nav {
+                width: calc(100% - 22px);
+                top: 12px;
+                border-radius: 20px;
+                padding: 0 10px 0 12px;
+            }
+
+            .brand-logo {
+                width: 38px;
+                height: 38px;
+            }
+
+            .lang button {
+                padding: 7px 9px;
+            }
+
+            .hero {
+                width: calc(100% - 22px);
+                padding-top: 125px;
+            }
+
+            h1 {
+                font-size: clamp(3rem, 16vw, 5rem);
+            }
+
+            .section {
+                width: calc(100% - 22px);
+                padding: 72px 0;
+            }
+
+            .grid-4,
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .preview,
+            .image-wrap {
+                min-height: 260px;
+            }
+
+            .hero-img {
+                max-height: 360px;
+            }
+
+            .preview img {
+                max-height: 420px;
+            }
+
+            .cta {
+                padding: 34px;
+            }
+
+            .footer {
+                width: calc(100% - 22px);
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .download-panel-wrap {
+                width: calc(100% - 22px);
+            }
+
+            .download-panel {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="noise"></div>
+
+    <header class="nav">
+        <a class="brand" href="#">
+            <img class="brand-logo safe-img" src="https://sb.koding.school/project_assets/8d6f7b54fa201ac1685f981bb2b5300c.png?v=1" alt="AstraX Logo">
+            <div class="brand-title">
+                <strong>AstraX</strong>
+                <span>1.0.0 Edition</span>
+            </div>
+        </a>
+
+        <nav class="nav-links">
+            <a href="#overview" data-i18n="navOverview">Overview</a>
+            <a href="#craft" data-i18n="navCraft">Design</a>
+            <a href="#preview" data-i18n="navPreview">Preview</a>
+            <a href="#release" data-i18n="navRelease">Release</a>
+            <a href="#download-panel" data-i18n="navDownload">Download</a>
+        </nav>
+
+        <div class="lang">
+            <button class="lang-btn active" data-lang="en">EN</button>
+            <button class="lang-btn" data-lang="zh">中文</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-copy">
+                <div class="pill">
+                    <i data-lucide="circle-check"></i>
+                    <span data-i18n="badge">AstraX 1.0.0 · 100% sUNC / 100% UNC</span>
+                </div>
+
+                <h1>
+                    <span data-i18n="heroTop">Quiet design.</span>
+                    <span class="h1-sub" data-i18n="heroBottom">Precise execution.</span>
+                </h1>
+
+                <p class="hero-desc" data-i18n="heroDesc">
+                    AstraX 1.0.0 is a Roblox script executor by the Chinese-speaking AstraX development team. The interface keeps a dark direction, fast automatic updates, and a focused workspace built around control.
+                </p>
+
+                <div class="actions">
+                    <a class="btn discord" href="https://discord.gg/f2nmKQ5WsX" target="_blank">
+                        <i data-lucide="message-circle"></i>
+                        <span>Discord</span>
+                    </a>
+
+                    <a class="btn btn-ghost" href="#preview">
+                        <i data-lucide="monitor-play"></i>
+                        <span data-i18n="heroBtn1">View interface</span>
+                    </a>
+
+                    <a class="btn btn-ghost" href="#craft">
+                        <i data-lucide="layers-3"></i>
+                        <span data-i18n="heroBtn2">View design</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-stage">
+                <div class="orbit"></div>
+
+                <div class="window">
+                    <div class="window-bar">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="window-title">AstraX / U1</span>
+                    </div>
+
+                    <div class="image-wrap">
+                        <img class="hero-img" id="heroImage" src="https://sb.koding.school/project_assets/53e09c48921fc1b6952642f3153b26a2.png?v=1" alt="AstraX UI">
+                        <div class="image-fallback" id="heroFallback">
+                            UI.png was not found. Put UI.png beside AstraX.html.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="float-card one">
+                    <i data-lucide="shield-check"></i>
+                    <div>
+                        <strong>100%</strong>
+                        <span>UNC</span>
+                    </div>
+                </div>
+
+                <div class="float-card two">
+                    <i data-lucide="refresh-cw"></i>
+                    <div>
+                        <strong>Auto</strong>
+                        <span data-i18n="floatUpdate">Update</span>
+                    </div>
+                </div>
+
+                <div class="float-card three">
+                    <i data-lucide="badge-check"></i>
+                    <div>
+                        <strong>1.0.0</strong>
+                        <span data-i18n="floatEdition">Current</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section reveal" id="overview">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">
+                        <i data-lucide="scan-line"></i>
+                        <span data-i18n="overviewKicker">Overview</span>
+                    </div>
+
+                    <h2 class="section-title" data-i18n="overviewTitle">
+                        Built around a cleaner executor workspace.
+                    </h2>
+                </div>
+
+                <p class="section-desc" data-i18n="overviewDesc">
+                    This release removes the unnecessary noise. Panels are clear, motion is controlled, and the visual system stays close to a premium desktop tool instead of a template landing page.
+                </p>
+            </div>
+
+            <div class="grid-4">
+                <div class="stat">
+                    <div class="stat-icon">
+                        <i data-lucide="badge-check"></i>
+                    </div>
+                    <div class="stat-value">
+                        1.0.0
+                    </div>
+                    <div class="stat-label" data-i18n="stat1">
+                        Current version
+                    </div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">
+                        <i data-lucide="activity"></i>
+                    </div>
+                    <div class="stat-value">
+                        100%
+                    </div>
+                    <div class="stat-label" data-i18n="stat2">
+                        sUNC support
+                    </div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">
+                        <i data-lucide="cpu"></i>
+                    </div>
+                    <div class="stat-value">
+                        100%
+                    </div>
+                    <div class="stat-label" data-i18n="stat3">
+                        UNC support
+                    </div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-icon">
+                        <i data-lucide="refresh-cw"></i>
+                    </div>
+                    <div class="stat-value">
+                        Auto
+                    </div>
+                    <div class="stat-label" data-i18n="stat4">
+                        Fast update cycle
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section reveal" id="craft">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">
+                        <i data-lucide="panel-top"></i>
+                        <span data-i18n="craftKicker">Design</span>
+                    </div>
+
+                    <h2 class="section-title" data-i18n="craftTitle">
+                        Clean layering, thin highlights, measured motion.
+                    </h2>
+                </div>
+
+                <p class="section-desc" data-i18n="craftDesc">
+                    This page uses black, grey, and cold white instead of saturated color. The goal is to make AstraX look like a serious release, not a generated showcase.
+                </p>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="gem"></i>
+                    </div>
+                    <h3 data-i18n="feature1Title">Clean layering</h3>
+                    <p data-i18n="feature1Desc">
+                        Transparent panels, soft blur, and thin borders create depth without relying on bright colors.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="rocket"></i>
+                    </div>
+                    <h3 data-i18n="feature2Title">Fast updates</h3>
+                    <p data-i18n="feature2Desc">
+                        Automatic updates keep the client aligned with the latest build and reduce manual work.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="eye-off"></i>
+                    </div>
+                    <h3 data-i18n="feature3Title">Discreet profile</h3>
+                    <p data-i18n="feature3Desc">
+                        The experience stays compact and direct, with less decoration and more focus on the executor itself.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="mouse-pointer-click"></i>
+                    </div>
+                    <h3 data-i18n="feature4Title">Sharp interaction</h3>
+                    <p data-i18n="feature4Desc">
+                        Hover states, preview switching, and section reveals are kept smooth without feeling over-animated.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="terminal-square"></i>
+                    </div>
+                    <h3 data-i18n="feature5Title">Compatibility</h3>
+                    <p data-i18n="feature5Desc">
+                        AstraX 1.0.0 highlights 100% sUNC and 100% UNC support as part of the release profile.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i data-lucide="crown"></i>
+                    </div>
+                    <h3 data-i18n="feature6Title">AstraX team</h3>
+                    <p data-i18n="feature6Desc">
+                        Created by the Chinese-language AstraX development team.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section reveal" id="preview">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">
+                        <i data-lucide="image"></i>
+                        <span data-i18n="previewKicker">Preview</span>
+                    </div>
+
+                    <h2 class="section-title" data-i18n="previewTitle">
+                        Local UI preview.
+                    </h2>
+                </div>
+
+                <p class="section-desc" data-i18n="previewDesc">
+                    Ultimate visual enjoyment
+                </p>
+            </div>
+
+            <div class="showcase">
+                <div class="showcase-top">
+                    <div class="tabs">
+                        <button class="tab active" data-img="https://sb.koding.school/project_assets/53e09c48921fc1b6952642f3153b26a2.png?v=1" data-name="U1">
+                            <i data-lucide="layout-dashboard"></i>
+                            <span>U1</span>
+                        </button>
+
+                        <button class="tab" data-img="https://sb.koding.school/project_assets/993c095cb185ace9b4d9e42965b53908.png?v=1" data-name="U2">
+                            <i data-lucide="panel-left"></i>
+                            <span>U2</span>
+                        </button>
+
+                        <button class="tab" data-img="https://sb.koding.school/project_assets/5f6373295cebae85ca4af0a3b069d7ea.png?v=1" data-name="U3">
+                            <i data-lucide="scan-line"></i>
+                            <span>U3</span>
+                        </button>
+
+                        <button class="tab" data-img="https://sb.koding.school/project_assets/1a225fbc411afa7f130fd6afc678f755.png?v=1" data-name="U4">
+                            <i data-lucide="app-window"></i>
+                            <span>U4</span>
+                        </button>
+                    </div>
+
+                    <div class="preview-status">
+                        <i data-lucide="circle-check"></i>
+                        <span id="previewStatus" data-i18n="previewStatus">Loaded from current folder</span>
+                    </div>
+                </div>
+
+                <div class="preview">
+                    <img id="mainPreview" src="https://sb.koding.school/project_assets/53e09c48921fc1b6952642f3153b26a2.png?v=1" alt="AstraX UI Preview">
+                    <div class="preview-fallback" id="previewFallback">
+                        UI.png was not found. Put UI.png beside AstraX.html.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section reveal" id="release">
+            <div class="cta">
+                <h2 data-i18n="ctaTitle">
+                    AstraX 1.0.0, built by the Chinese AstraX team.
+                </h2>
+
+                <p data-i18n="ctaDesc">
+                    A dark Roblox executor: 100% sUNC, 100% UNC, fast automatic updates, local UI previews, and a restrained visual direction built around graphite and white highlights.
+                </p>
+
+                <div class="cta-actions">
+                    <a class="btn btn-primary" href="#preview">
+                        <i data-lucide="image"></i>
+                        <span data-i18n="ctaBtn">Open preview</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <section class="download-panel-wrap reveal" id="download-panel">
+        <div class="download-panel">
+            <h3 data-i18n="downloadPanelTitle">Download the AstraX</h3>
+            <p data-i18n="downloadPanelNote">
+                Now it work
+            </p>
+            <button class="btn btn-primary" id="megaDownloadBtn" type="button">
+                <i data-lucide="download"></i>
+                <span data-i18n="downloadCtaBtn">Download</span>
+            </button>
+        </div>
+    </section>
+
+    <div class="download-overlay" id="downloadOverlay" hidden>
+        <div class="download-overlay-card" role="status" aria-live="polite">
+            <div class="download-overlay-top">
+                <img class="download-overlay-logo" src="https://sb.koding.school/project_assets/8d6f7b54fa201ac1685f981bb2b5300c.png?v=1" alt="AstraX">
+                <div class="download-overlay-text">
+                    <strong data-i18n="downloadProgressTitle">AstraX is download</strong>
+                    <span data-i18n="downloadProgressHint">Please wait...</span>
+                </div>
+            </div>
+            <div class="download-progress-track">
+                <div class="download-progress-bar" id="downloadProgressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-left">
+            <img class="safe-img" src="https://sb.koding.school/project_assets/8d6f7b54fa201ac1685f981bb2b5300c.png?v=1" alt="AstraX Logo">
+            <span>© 2026 AstraX Development Team</span>
+        </div>
+
+        <span data-i18n="footer">AstraX 1.0.0 · Release</span>
+    </footer>
+
+    <script>
+        const imageFiles = {
+            logo: "https://sb.koding.school/project_assets/8d6f7b54fa201ac1685f981bb2b5300c.png?v=1",
+            ui1: "https://sb.koding.school/project_assets/53e09c48921fc1b6952642f3153b26a2.png?v=1",
+            ui2: "https://sb.koding.school/project_assets/993c095cb185ace9b4d9e42965b53908.png?v=1",
+            ui3: "https://sb.koding.school/project_assets/5f6373295cebae85ca4af0a3b069d7ea.png?v=1",
+            ui4: "https://sb.koding.school/project_assets/1a225fbc411afa7f130fd6afc678f755.png?v=1"
+        };
+
+        const translations = {
+            en: {
+                navOverview: "Overview",
+                navCraft: "Design",
+                navPreview: "Preview",
+                navDownload: "Download",
+                navRelease: "Release",
+
+                badge: "AstraX 1.0.0 · 100% sUNC / 100% UNC",
+                heroTop: "Quiet design.",
+                heroBottom: "Precise execution.",
+                heroDesc: "AstraX 1.0.0 is a Roblox script executor by the Chinese-speaking AstraX development team. The interface keeps a dark direction, fast automatic updates, and a focused workspace built around control.",
+                heroBtn1: "View interface",
+                heroBtn2: "View design",
+
+                floatUpdate: "Update",
+                floatEdition: "Current",
+
+                overviewKicker: "Overview",
+                overviewTitle: "Built around a cleaner executor workspace.",
+                overviewDesc: "This release removes the unnecessary noise. Panels are clear, motion is controlled, and the visual system stays close to a premium desktop tool instead of a template landing page.",
+
+                stat1: "Current version",
+                stat2: "sUNC support",
+                stat3: "UNC support",
+                stat4: "Fast update cycle",
+
+                craftKicker: "Design",
+                craftTitle: "Clean layering, thin highlights, measured motion.",
+                craftDesc: "This page uses black, grey, and cold white instead of saturated color. The goal is to make AstraX look like a serious release, not a generated showcase.",
+
+                feature1Title: "Clean layering",
+                feature1Desc: "Transparent panels, soft blur, and thin borders create depth without relying on bright colors.",
+
+                feature2Title: "Fast updates",
+                feature2Desc: "Automatic updates keep the client aligned with the latest build and reduce manual work.",
+
+                feature3Title: "Discreet profile",
+                feature3Desc: "The experience stays compact and direct, with less decoration and more focus on the executor itself.",
+
+                feature4Title: "Sharp interaction",
+                feature4Desc: "Hover states, preview switching, and section reveals are kept smooth without feeling over-animated.",
+
+                feature5Title: "Compatibility",
+                feature5Desc: "AstraX 1.0.0 highlights 100% sUNC and 100% UNC support as part of the release profile.",
+
+                feature6Title: "AstraX team",
+                feature6Desc: "Created by the Chinese-language AstraX development team.",
+
+                previewKicker: "Preview",
+                previewTitle: "Local UI preview.",
+                previewDesc: "Ultimate visual enjoyment",
+                previewStatus: "Loaded from current folder",
+
+                ctaTitle: "AstraX 1.0.0, built by the Chinese AstraX team.",
+                ctaDesc: "A dark Roblox executor website: 100% sUNC, 100% UNC, fast automatic updates, local UI previews, and a restrained visual direction built around graphite and white highlights.",
+                ctaBtn: "Open preview",
+                downloadCtaBtn: "Download",
+                downloadPanelTitle: "Download the AstraX",
+                downloadPanelNote: "Now it work",
+                downloadProgressTitle: "AstraX is download",
+                downloadProgressHint: "Please wait...",
+
+                footer: "AstraX 1.0.0 · Release"
+            },
+
+            zh: {
+                navOverview: "總覽",
+                navCraft: "設計",
+                navPreview: "預覽",
+                navDownload: "下載",
+                navRelease: "版本",
+
+                badge: "AstraX 1.0.0 · 100% sUNC / 100% UNC",
+                heroTop: "安靜設計。",
+                heroBottom: "精準執行。",
+                heroDesc: "AstraX 1.0.0 是由中文圈 AstraX 團隊打造的 Roblox 腳本執行器，介面聚焦於控制感、快速自動更新與清楚的工作流程。",
+                heroBtn1: "查看介面",
+                heroBtn2: "查看設計",
+
+                floatUpdate: "更新",
+                floatEdition: "目前版本",
+
+                overviewKicker: "總覽",
+                overviewTitle: "圍繞更乾淨的執行工作區打造。",
+                overviewDesc: "1.0.0 拿掉不必要的雜訊，保留清楚面板與克制動態。",
+
+                stat1: "目前版本",
+                stat2: "sUNC 支援",
+                stat3: "UNC 支援",
+                stat4: "快速更新節奏",
+
+                craftKicker: "設計",
+                craftTitle: "清晰分層、細高光、克制動態。",
+                craftDesc: "整體採用黑、灰、冷白色調，讓 AstraX 呈現更正式、更專注的產品感。",
+
+                feature1Title: "清晰分層",
+                feature1Desc: "透明面板、柔和模糊與細邊框，在不依賴高飽和色的情況下保留層次感。",
+
+                feature2Title: "快速更新",
+                feature2Desc: "自動更新讓客戶端快速跟上最新版本，減少手動處理。",
+
+                feature3Title: "低調定位",
+                feature3Desc: "體驗保持緊湊直接，減少裝飾，把焦點放回執行器本身。",
+
+                feature4Title: "銳利互動",
+                feature4Desc: "懸停狀態、預覽切換與區塊進場保持順滑，不做過度動畫。",
+
+                feature5Title: "相容能力",
+                feature5Desc: "AstraX 1.0.0 以 100% sUNC 與 100% UNC 支援作為版本重點。",
+
+                feature6Title: "AstraX 團隊",
+                feature6Desc: "由中文圈 AstraX 開發團隊打造。",
+
+                previewKicker: "預覽",
+                previewTitle: "本地 UI 預覽。",
+                previewDesc: "極致的視覺享受",
+                previewStatus: "已從目前資料夾載入",
+
+                ctaTitle: "AstraX 1.0.0，由中文圈 AstraX 團隊打造。",
+                ctaDesc: "AstraX 1.0.0 主打 100% sUNC、100% UNC、快速自動更新與本地 UI 預覽。",
+                ctaBtn: "開啟預覽",
+                downloadCtaBtn: "下載",
+                downloadPanelTitle: "下載 AstraX",
+                downloadPanelNote: "現在可用了",
+                downloadProgressTitle: "AstraX 下載中",
+                downloadProgressHint: "請稍候...",
+
+                footer: "AstraX 1.0.0 · Release"
+            }
+        };
+        const langButtons = document.querySelectorAll(".lang-btn");
+        const translatable = document.querySelectorAll("[data-i18n]");
+
+        function setLanguage(lang) {
+            document.documentElement.lang = lang === "zh" ? "zh-TW": "en";
+
+            translatable.forEach(element => {
+                const key = element.dataset.i18n;
+
+                if (translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+
+            langButtons.forEach(button => {
+                button.classList.toggle("active", button.dataset.lang === lang);
+            });
+        }
+
+        langButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                setLanguage(button.dataset.lang);
+            });
+        });
+
+        function preloadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+
+                img.onload = () => resolve(src);
+                img.onerror = () => reject(src);
+                img.src = src;
+            });
+        }
+
+        function markImageLoaded(imgElement, fallbackElement) {
+            if (!imgElement) {
+                return;
+            }
+
+            if (imgElement.complete && imgElement.naturalWidth > 0) {
+                imgElement.classList.add("loaded");
+
+                if (fallbackElement) {
+                    fallbackElement.classList.remove("show");
+                }
+
+                return;
+            }
+
+            imgElement.addEventListener("load", () => {
+                imgElement.classList.add("loaded");
+
+                if (fallbackElement) {
+                    fallbackElement.classList.remove("show");
+                }
+            });
+
+            imgElement.addEventListener("error", () => {
+                imgElement.classList.remove("loaded");
+
+                if (fallbackElement) {
+                    fallbackElement.classList.add("show");
+                }
+            });
+        }
+
+        function prepareLocalImages() {
+            const logoImages = document.querySelectorAll(".safe-img");
+
+            logoImages.forEach(img => {
+                img.addEventListener("error", () => {
+                    img.style.opacity = "0";
+                });
+
+                if (img.complete && img.naturalWidth === 0) {
+                    img.style.opacity = "0";
+                }
+            });
+
+            const heroImage = document.getElementById("heroImage");
+            const heroFallback = document.getElementById("heroFallback");
+            const mainPreview = document.getElementById("mainPreview");
+            const previewFallback = document.getElementById("previewFallback");
+
+            markImageLoaded(heroImage, heroFallback);
+            markImageLoaded(mainPreview, previewFallback);
+
+            Object.values(imageFiles).forEach(src => {
+                preloadImage(src).catch(() => {});
+            });
+        }
+
+        const revealItems = document.querySelectorAll(".reveal");
+
+        const revealObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("show");
+                }
+            });
+        }, {
+            threshold: 0.16
+        });
+
+        revealItems.forEach(item => revealObserver.observe(item));
+
+        const tabs = document.querySelectorAll(".tab");
+        const mainPreview = document.getElementById("mainPreview");
+        const heroImage = document.getElementById("heroImage");
+        const previewFallback = document.getElementById("previewFallback");
+        const heroFallback = document.getElementById("heroFallback");
+        const previewStatus = document.getElementById("previewStatus");
+        const windowTitle = document.querySelector(".window-title");
+        const megaDownloadBtn = document.getElementById("megaDownloadBtn");
+        const downloadOverlay = document.getElementById("downloadOverlay");
+        const downloadProgressBar = document.getElementById("downloadProgressBar");
+        const megaFileUrl = "https://mega.nz/file/IrdF1TAI#Dc4OQ580-E-H0lHEnIWZdGeuZHZF1Fhj-3SC3I9insA";
+        let megaDownloadRunning = false;
+
+        function showDownloadOverlay() {
+            if (!downloadOverlay || !downloadProgressBar) {
+                return;
+            }
+
+            downloadProgressBar.style.width = "0%";
+            downloadOverlay.hidden = false;
+            downloadOverlay.classList.add("show");
+            document.documentElement.classList.add("no-scroll");
+            document.body.classList.add("no-scroll");
+        }
+
+        function hideDownloadOverlay() {
+            if (!downloadOverlay) {
+                return;
+            }
+
+            downloadOverlay.classList.remove("show");
+            downloadOverlay.hidden = true;
+            document.documentElement.classList.remove("no-scroll");
+            document.body.classList.remove("no-scroll");
+        }
+
+        function setDownloadProgress(percent) {
+            if (!downloadProgressBar) {
+                return;
+            }
+
+            const safe = Math.max(0, Math.min(100, percent));
+            downloadProgressBar.style.width = safe + "%";
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", async () => {
+                const src = tab.dataset.img;
+                const name = tab.dataset.name;
+
+                tabs.forEach(item => item.classList.remove("active"));
+                tab.classList.add("active");
+
+                mainPreview.classList.add("switching");
+                heroImage.classList.add("switching");
+
+                try {
+                    await preloadImage(src);
+
+                    setTimeout(() => {
+                        mainPreview.src = src;
+                        heroImage.src = src;
+
+                        mainPreview.classList.add("loaded");
+                        heroImage.classList.add("loaded");
+
+                        mainPreview.classList.remove("switching");
+                        heroImage.classList.remove("switching");
+
+                        previewFallback.classList.remove("show");
+                        heroFallback.classList.remove("show");
+
+                        if (windowTitle) {
+                            windowTitle.textContent = "AstraX / " + name;
+                        }
+
+                        if (previewStatus) {
+                            previewStatus.textContent = document.documentElement.lang === "zh-TW"
+                            ? "撌脰???" + name: "Loaded " + name;
+                        }
+                    }, 220);
+                } catch (error) {
+                    setTimeout(() => {
+                        mainPreview.classList.remove("loaded");
+                        heroImage.classList.remove("loaded");
+
+                        mainPreview.classList.remove("switching");
+                        heroImage.classList.remove("switching");
+
+                        previewFallback.textContent = name + " was not found. Put " + name + " beside AstraX.html.";
+                        heroFallback.textContent = name + " was not found. Put " + name + " beside AstraX.html.";
+
+                        previewFallback.classList.add("show");
+                        heroFallback.classList.add("show");
+
+                        if (previewStatus) {
+                            previewStatus.textContent = document.documentElement.lang === "zh-TW"
+                            ? "?曆???" + name: "Missing " + name;
+                        }
+                    }, 220);
+                }
+            });
+        });
+
+        if (megaDownloadBtn) {
+            megaDownloadBtn.addEventListener("click", async () => {
+                if (megaDownloadRunning) {
+                    return;
+                }
+
+                megaDownloadRunning = true;
+                megaDownloadBtn.disabled = true;
+                showDownloadOverlay();
+                setDownloadProgress(1);
+
+                try {
+                    if (!window.mega || !window.mega.File) {
+                        throw new Error("Mega library unavailable");
+                    }
+
+                    const file = window.mega.File.fromURL(megaFileUrl);
+                    await file.loadAttributes();
+
+                    const stream = file.download();
+                    const chunks = [];
+                    let latestProgress = 1;
+
+                    await new Promise((resolve, reject) => {
+                        stream.on("progress", info => {
+                            if (!info || !info.bytesTotal) {
+                                return;
+                            }
+
+                            const percent = Math.round((info.bytesLoaded / info.bytesTotal) * 100);
+                            latestProgress = Math.max(latestProgress, percent);
+                            setDownloadProgress(latestProgress);
+                        });
+
+                        stream.on("data", chunk => {
+                            chunks.push(chunk);
+                        });
+
+                        stream.on("error", reject);
+                        stream.on("end", resolve);
+                    });
+
+                    setDownloadProgress(100);
+
+                    const normalizedChunks = chunks.map(chunk => {
+                        if (chunk instanceof Uint8Array) {
+                            return chunk;
+                        }
+
+                        if (chunk instanceof ArrayBuffer) {
+                            return new Uint8Array(chunk);
+                        }
+
+                        if (ArrayBuffer.isView(chunk)) {
+                            return new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+                        }
+
+                        return new Uint8Array([]);
+                    });
+
+                    const blob = new Blob(normalizedChunks, {
+                        type: "application/octet-stream"
+                    });
+                    const objectUrl = URL.createObjectURL(blob);
+                    const downloadLink = document.createElement("a");
+                    downloadLink.href = objectUrl;
+                    downloadLink.download = file.name || "AstraX-1.0.0";
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    downloadLink.remove();
+                    URL.revokeObjectURL(objectUrl);
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    setTimeout(() => {
+                        hideDownloadOverlay();
+                        megaDownloadBtn.disabled = false;
+                        megaDownloadRunning = false;
+                    }, 450);
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            prepareLocalImages();
+            setLanguage("en");
+
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+
+</body>
+</html>
